@@ -7,6 +7,9 @@
 #define ISHAPE 4
 #define SQUARE 5
 
+#define LEFT false
+#define RIGHT true
+
 struct tile{
       int prop[4];
       int shape;
@@ -36,6 +39,8 @@ void jShape(tile* _tile);
 void iShape(tile* _tile);
 void squareS(tile* _tile);
 void renTile(SDL_Renderer* renderer, tile* _tile);
+void rePos(tile* _tile);
+void moveTile(tile* _tile, bool dir);
 
 bool falling(tile* _tile);
 
@@ -47,8 +52,12 @@ int main(int argc, char* argv[]){
       SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
 
       tile fall;
-      // squareS(&fall);
-      iShape(&fall);
+      squareS(&fall);
+      // iShape(&fall);
+      // sShape(&fall);
+      // zShape(&fall);
+      // lShape(&fall);
+      // jShape(&fall);
 
       uint frmTime = SDL_GetTicks();
 
@@ -56,9 +65,15 @@ int main(int argc, char* argv[]){
             SDL_Event e;
             SDL_PollEvent(&e);
             if(e.type == SDL_QUIT){break;}
+            if(e.type == SDL_KEYDOWN){
+                  if(e.key.keysym.sym == SDLK_a){moveTile(&fall, LEFT);}
+                  if(e.key.keysym.sym == SDLK_d){moveTile(&fall, RIGHT);}
+            }
 
             if(SDL_GetTicks()-frmTime >= 1000/10){
-                  falling(&fall);
+                  if(!falling(&fall)){
+                        rePos(&fall);
+                  }
                   frmTime = SDL_GetTicks();
             }
 
@@ -90,19 +105,27 @@ void field(SDL_Renderer* renderer){
 }
 
 void sShape(tile* _tile){
-
+      _tile->prop[0]=-5;_tile->prop[1]=-4;
+      _tile->prop[2]=2;_tile->prop[3]=3;
+      _tile->shape = SSHAPE;
 }
 
 void zShape(tile* _tile){
-      
+      _tile->prop[0]=-6;_tile->prop[1]=-5;
+      _tile->prop[2]=3;_tile->prop[3]=4;
+      _tile->shape = ZSHAPE;
 }
 
 void lShape(tile* _tile){
-      
+      _tile->prop[0]=-13;_tile->prop[1]=-5;
+      _tile->prop[2]=3;_tile->prop[3]=4;
+      _tile->shape = LSHAPE;
 }
 
 void jShape(tile* _tile){
-      
+      _tile->prop[0]=-12;_tile->prop[1]=-4;
+      _tile->prop[2]=3;_tile->prop[3]=4;
+      _tile->shape = JSHAPE;
 }
 
 void iShape(tile* _tile){
@@ -124,24 +147,66 @@ void renTile(SDL_Renderer* renderer, tile* _tile){
             tileD = {_tile->prop[i]%8*50,_tile->prop[i]/8*50,50,50};
             SDL_RenderDrawRect(renderer,&tileD);
       }
+      for(int i = 0; i < 96; i++){
+            if(layout[i] == 1){
+                  tileD = {i%8*50,i/8*50,50,50};
+                  SDL_RenderDrawRect(renderer,&tileD);
+            }
+      }
+}
+
+void rePos(tile* _tile){
+      squareS(_tile);
+}
+
+void moveTile(tile* _tile, bool dir){
+      bool canMove = true;
+      if(dir){
+            for(int i = 0; i < 4; i++){
+                  if(_tile->prop[i]%8==7){
+                        canMove = false;
+                        break;
+                  }
+            }
+            if(canMove){
+                  for(int i = 0; i < 4; i++){
+                        _tile->prop[i]++;
+                  }
+            }
+      }else{
+            for(int i = 0; i < 4; i++){
+                  if(_tile->prop[i]%8==0){
+                        canMove = false;
+                        break;
+                  }
+            }
+            if(canMove){
+                  for(int i = 0; i < 4; i++){
+                        _tile->prop[i]--;
+                  }
+            }
+      }
 }
 
 bool falling(tile* _tile){
       bool stack = false;
-      if(_tile->prop[3]/8!=11){
+      if(_tile->prop[3]/8<11){
             for(int i = 0; i < 4; i++){
-                  if(layout[_tile->prop[i]]+8==1){
+                  if(layout[_tile->prop[i]+8]==1){
                         stack = true;
+                        SDL_Log("stack");
                         break;
                   }
             }
       }else{
             stack = true;
+            // SDL_Log("stack");
       }
 
       if(stack){
             for(int i = 0; i < 4; i++){
                   layout[_tile->prop[i]]=1;
+                  SDL_Log("%d",_tile->prop[i]);
             }
       }else{
             for(int i = 0; i < 4; i++){
