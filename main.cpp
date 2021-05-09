@@ -15,19 +15,31 @@ struct tile{
       int shape;
 };
 
-int layout[8*12] = {
-      0,0,0,0,0,0,0,0,
-      0,0,0,0,0,0,0,0,
-      0,0,0,0,0,0,0,0,
-      0,0,0,0,0,0,0,0,
-      0,0,0,0,0,0,0,0,
-      0,0,0,0,0,0,0,0,
-      0,0,0,0,0,0,0,0,
-      0,0,0,0,0,0,0,0,
-      0,0,0,0,0,0,0,0,
-      0,0,0,0,0,0,0,0,
-      0,0,0,0,0,0,0,0,
-      0,0,0,0,0,0,0,0,
+int layout[16*24] = {
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 };
 
 void field(SDL_Renderer* renderer);
@@ -135,8 +147,8 @@ void iShape(tile* _tile){
 }
 
 void squareS(tile* _tile){
-      _tile->prop[0]=-5;_tile->prop[1]=-4;
-      _tile->prop[2]=3;_tile->prop[3]=4;
+      _tile->prop[0]=-8;_tile->prop[1]=-7;
+      _tile->prop[2]=8;_tile->prop[3]=9;
       _tile->shape = SQUARE;
 }
 
@@ -144,12 +156,12 @@ void renTile(SDL_Renderer* renderer, tile* _tile){
       SDL_Rect tileD;
       SDL_SetRenderDrawColor(renderer, 255,255,255,255);
       for(int i = 0; i < 4; i++){
-            tileD = {_tile->prop[i]%8*50,_tile->prop[i]/8*50,50,50};
+            tileD = {_tile->prop[i]%16*25,_tile->prop[i]/16*25,24,24};
             SDL_RenderDrawRect(renderer,&tileD);
       }
-      for(int i = 0; i < 96; i++){
+      for(int i = 0; i < 16*24; i++){
             if(layout[i] == 1){
-                  tileD = {i%8*50,i/8*50,50,50};
+                  tileD = {i%16*25,i/16*25,24,24};
                   SDL_RenderDrawRect(renderer,&tileD);
             }
       }
@@ -163,7 +175,11 @@ void moveTile(tile* _tile, bool dir){
       bool canMove = true;
       if(dir){
             for(int i = 0; i < 4; i++){
-                  if(_tile->prop[i]%8==7){
+                  if(_tile->prop[i]%16==15){
+                        canMove = false;
+                        break;
+                  }
+                  if(layout[_tile->prop[i]+1] == 1){
                         canMove = false;
                         break;
                   }
@@ -175,7 +191,11 @@ void moveTile(tile* _tile, bool dir){
             }
       }else{
             for(int i = 0; i < 4; i++){
-                  if(_tile->prop[i]%8==0){
+                  if(_tile->prop[i]%16==0){
+                        canMove = false;
+                        break;
+                  }
+                  if(layout[_tile->prop[i]-1] == 1){
                         canMove = false;
                         break;
                   }
@@ -190,9 +210,9 @@ void moveTile(tile* _tile, bool dir){
 
 bool falling(tile* _tile){
       bool stack = false;
-      if(_tile->prop[3]/8<11){
+      if(_tile->prop[3]/16<23){
             for(int i = 0; i < 4; i++){
-                  if(layout[_tile->prop[i]+8]==1){
+                  if(layout[_tile->prop[i]+16]==1){
                         stack = true;
                         SDL_Log("stack");
                         break;
@@ -210,7 +230,7 @@ bool falling(tile* _tile){
             }
       }else{
             for(int i = 0; i < 4; i++){
-                  _tile->prop[i]+=8;
+                  _tile->prop[i]+=16;
             }
       }
 
