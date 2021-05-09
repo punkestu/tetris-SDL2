@@ -5,10 +5,13 @@
 #define ZSHAPE 2
 #define SSHAPE 3
 #define ISHAPE 4
-#define SQUARE 5
+#define TSHAPE 5
+#define SQUARE 6
 
 #define LEFT false
 #define RIGHT true
+
+#define CENTER {7,8}
 
 struct tile{
       int prop[4];
@@ -49,6 +52,7 @@ void zShape(tile* _tile);
 void lShape(tile* _tile);
 void jShape(tile* _tile);
 void iShape(tile* _tile);
+void tShape(tile* _tile);
 void squareS(tile* _tile);
 void renTile(SDL_Renderer* renderer, tile* _tile);
 void rePos(tile* _tile);
@@ -58,6 +62,8 @@ void eraseLine();
 bool falling(tile* _tile, int stackDel);
 void layoutFall();
 
+int randx(int min, int max);
+
 int main(int argc, char* argv[]){
       
       SDL_Init(SDL_INIT_EVERYTHING);
@@ -66,7 +72,8 @@ int main(int argc, char* argv[]){
       SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
 
       tile fall;
-      squareS(&fall);
+      rePos(&fall);
+      // squareS(&fall);
       // iShape(&fall);
       // sShape(&fall);
       // zShape(&fall);
@@ -137,38 +144,44 @@ void field(SDL_Renderer* renderer){
 }
 
 void sShape(tile* _tile){
-      _tile->prop[0]=-5;_tile->prop[1]=-4;
-      _tile->prop[2]=2;_tile->prop[3]=3;
+      _tile->prop[0]=-8;_tile->prop[1]=-7;
+      _tile->prop[2]=7;_tile->prop[3]=8;
       _tile->shape = SSHAPE;
 }
 
 void zShape(tile* _tile){
-      _tile->prop[0]=-6;_tile->prop[1]=-5;
-      _tile->prop[2]=3;_tile->prop[3]=4;
+      _tile->prop[0]=-10;_tile->prop[1]=-9;
+      _tile->prop[2]=7;_tile->prop[3]=8;
       _tile->shape = ZSHAPE;
 }
 
 void lShape(tile* _tile){
-      _tile->prop[0]=-13;_tile->prop[1]=-5;
-      _tile->prop[2]=3;_tile->prop[3]=4;
+      _tile->prop[0]=-25;_tile->prop[1]=-9;
+      _tile->prop[2]=7;_tile->prop[3]=8;
       _tile->shape = LSHAPE;
 }
 
 void jShape(tile* _tile){
-      _tile->prop[0]=-12;_tile->prop[1]=-4;
-      _tile->prop[2]=3;_tile->prop[3]=4;
+      _tile->prop[0]=-24;_tile->prop[1]=-8;
+      _tile->prop[2]=7;_tile->prop[3]=8;
       _tile->shape = JSHAPE;
 }
 
 void iShape(tile* _tile){
-      _tile->prop[0]=-20;_tile->prop[1]=-12;
-      _tile->prop[2]=-4;_tile->prop[3]=4;
+      _tile->prop[0]=-40;_tile->prop[1]=-24;
+      _tile->prop[2]=-8;_tile->prop[3]=8;
       _tile->shape = ISHAPE;
 }
 
+void tShape(tile* _tile){
+      _tile->prop[0]=-10;_tile->prop[1]=-9;
+      _tile->prop[2]=-8;_tile->prop[3]=7;
+      _tile->shape = TSHAPE;
+}
+
 void squareS(tile* _tile){
-      _tile->prop[0]=-8;_tile->prop[1]=-7;
-      _tile->prop[2]=8;_tile->prop[3]=9;
+      _tile->prop[0]=-9;_tile->prop[1]=-8;
+      _tile->prop[2]=7;_tile->prop[3]=8;
       _tile->shape = SQUARE;
 }
 
@@ -188,7 +201,17 @@ void renTile(SDL_Renderer* renderer, tile* _tile){
 }
 
 void rePos(tile* _tile){
-      squareS(_tile);
+      int param = randx(1,28)%7;
+      switch (param){
+            case SSHAPE: sShape(_tile); break;
+            case ZSHAPE: zShape(_tile); break;
+            case LSHAPE: lShape(_tile); break;
+            case JSHAPE: jShape(_tile); break;
+            case ISHAPE: iShape(_tile); break;
+            case TSHAPE: tShape(_tile); break;
+            case SQUARE: squareS(_tile); break;
+            default: break;
+      }
 }
 
 void moveTile(tile* _tile, bool dir){
@@ -287,4 +310,14 @@ void layoutFall(){
                   }
             }
       }
+}
+
+int randx(int min, int max){
+      int ret;
+      srand(SDL_GetTicks()%200*2-rand()-100+50);
+      for(int i = 0; i < 1000; i++){
+            ret = rand();
+      }
+      ret=(ret%(max-min+1))+min;
+      return ret;
 }
