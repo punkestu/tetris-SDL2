@@ -54,7 +54,7 @@ void renTile(SDL_Renderer* renderer, tile* _tile);
 void rePos(tile* _tile);
 void moveTile(tile* _tile, bool dir);
 
-bool falling(tile* _tile);
+bool falling(tile* _tile, int stackDel);
 
 int main(int argc, char* argv[]){
       
@@ -73,6 +73,9 @@ int main(int argc, char* argv[]){
 
       uint frmTime = SDL_GetTicks();
 
+      bool drop = false;
+      int stackDel = 0;
+
       while (true){
             SDL_Event e;
             SDL_PollEvent(&e);
@@ -80,11 +83,23 @@ int main(int argc, char* argv[]){
             if(e.type == SDL_KEYDOWN){
                   if(e.key.keysym.sym == SDLK_a){moveTile(&fall, LEFT);}
                   if(e.key.keysym.sym == SDLK_d){moveTile(&fall, RIGHT);}
+                  if(e.key.keysym.sym == SDLK_s){drop = true;}
+            }
+            if(e.type == SDL_KEYUP){
+                  if(e.key.keysym.sym == SDLK_s){drop = false;}
             }
 
-            if(SDL_GetTicks()-frmTime >= 1000/10){
-                  if(!falling(&fall)){
-                        rePos(&fall);
+            if(SDL_GetTicks()-frmTime >= 1000/(drop?20:10)){
+                  if(drop){stackDel = 4;}
+                  if(!falling(&fall, stackDel)){
+                        if(stackDel < 3){
+                              stackDel++;
+                        }else{
+                              rePos(&fall);
+                              stackDel=0;
+                        }
+                  }else{
+                        stackDel=0;
                   }
                   frmTime = SDL_GetTicks();
             }
@@ -208,13 +223,13 @@ void moveTile(tile* _tile, bool dir){
       }
 }
 
-bool falling(tile* _tile){
+bool falling(tile* _tile, int stackDel){
       bool stack = false;
       if(_tile->prop[3]/16<23){
             for(int i = 0; i < 4; i++){
                   if(layout[_tile->prop[i]+16]==1){
                         stack = true;
-                        SDL_Log("stack");
+                        // SDL_Log("stack");
                         break;
                   }
             }
@@ -224,9 +239,11 @@ bool falling(tile* _tile){
       }
 
       if(stack){
-            for(int i = 0; i < 4; i++){
-                  layout[_tile->prop[i]]=1;
-                  SDL_Log("%d",_tile->prop[i]);
+            if(stackDel>2){
+                  for(int i = 0; i < 4; i++){
+                        layout[_tile->prop[i]]=1;
+                        // SDL_Log("%d",_tile->prop[i]);
+                  }
             }
       }else{
             for(int i = 0; i < 4; i++){
