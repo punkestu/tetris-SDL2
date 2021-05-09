@@ -54,7 +54,9 @@ void renTile(SDL_Renderer* renderer, tile* _tile);
 void rePos(tile* _tile);
 void moveTile(tile* _tile, bool dir);
 
+void eraseLine();
 bool falling(tile* _tile, int stackDel);
+void layoutFall();
 
 int main(int argc, char* argv[]){
       
@@ -88,6 +90,9 @@ int main(int argc, char* argv[]){
             if(e.type == SDL_KEYUP){
                   if(e.key.keysym.sym == SDLK_s){drop = false;}
             }
+
+            eraseLine();
+            layoutFall();
 
             if(SDL_GetTicks()-frmTime >= 1000/(drop?20:10)){
                   if(drop){stackDel = 4;}
@@ -223,6 +228,20 @@ void moveTile(tile* _tile, bool dir){
       }
 }
 
+void eraseLine(){
+      for(int i = 0; i < 24; i++){
+            bool line = true;
+            for(int j = 0; j < 16; j++){
+                  if(layout[i*16+j] == 0){line = false;break;}
+            }
+            if(line){
+                  for(int j = 0; j < 16; j++){
+                        layout[i*16+j]=0;
+                  }
+            }
+      }
+}
+
 bool falling(tile* _tile, int stackDel){
       bool stack = false;
       if(_tile->prop[3]/16<23){
@@ -252,4 +271,20 @@ bool falling(tile* _tile, int stackDel){
       }
 
       return !stack;
+}
+
+void layoutFall(){
+      for(int i = 0; i < 24; i++){
+            bool line = true;
+            for(int j = 0; j < 16; j++){
+                  if(layout[i*16+j] == 1){line = false;break;}
+            }
+            if(line){
+                  for(int j = i; j >= 0; j--){
+                        for(int k = 0; k < 16; k++){
+                              layout[j*16+k]=layout[(j-1)*16+k];
+                        }
+                  }
+            }
+      }
 }
