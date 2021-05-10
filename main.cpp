@@ -102,35 +102,42 @@ int main(int argc, char* argv[]){
             SDL_Event e;
             SDL_PollEvent(&e);
             if(e.type == SDL_QUIT){break;}
-            if(e.type == SDL_KEYDOWN){
-                  // if(SDL_GetTicks()-btnP>=1000/200){
-                  if(e.key.keysym.sym == SDLK_a){moveTile(&fall, LEFT);}
-                  if(e.key.keysym.sym == SDLK_d){moveTile(&fall, RIGHT);}
-                  if(e.key.keysym.sym == SDLK_s){drop = true;}
-                  if(e.key.keysym.sym == SDLK_l){rotate(&fall);}
-                  // }
-            }
-            if(e.type == SDL_KEYUP){
-                  if(e.key.keysym.sym == SDLK_s){drop = false;}
-            }
 
-            erased = eraseLine();
-            layoutFall();
-            // SDL_Log("%d %d %d %d",fall.prop[0],fall.prop[1],fall.prop[2],fall.prop[3]);
+            if(SDL_GetWindowFlags(window) != SDL_WINDOW_MINIMIZED){
+                  if(e.type == SDL_KEYDOWN){
+                        // if(SDL_GetTicks()-btnP>=1000/200){
+                        if(e.key.keysym.sym == SDLK_a){moveTile(&fall, LEFT);}
+                        if(e.key.keysym.sym == SDLK_d){moveTile(&fall, RIGHT);}
+                        if(e.key.keysym.sym == SDLK_s){drop = true;}
+                        if(e.key.keysym.sym == SDLK_l){rotate(&fall);}
+                        if(e.key.keysym.sym == SDLK_j){rRotate(&fall);}
+                        // }
+                  }
+                  if(e.type == SDL_KEYUP){
+                        if(e.key.keysym.sym == SDLK_s){drop = false;}
+                  }
 
-            if(SDL_GetTicks()-frmTime >= 1000/(drop?20:10)){
-                  if(drop){stackDel = 4;}
-                  if(!falling(&fall, stackDel)){
-                        if(stackDel < 3){
-                              stackDel++;
+                  erased = eraseLine();
+                  layoutFall();
+                  // SDL_Log("%d %d %d %d",fall.prop[0],fall.prop[1],fall.prop[2],fall.prop[3]);
+
+                  if(SDL_GetTicks()-frmTime >= 1000/(drop?20:10)){
+                        if(drop){stackDel = 4;}
+                        if(!falling(&fall, stackDel)){
+                              if(stackDel < 3){
+                                    stackDel++;
+                              }else{
+                                    rePos(&fall);
+                                    stackDel=0;
+                              }
                         }else{
-                              rePos(&fall);
                               stackDel=0;
                         }
-                  }else{
-                        stackDel=0;
+                        frmTime = SDL_GetTicks();
                   }
-                  frmTime = SDL_GetTicks();
+            }else{
+                  frmTime=SDL_GetTicks();
+                  std::cout<<"minimized"<<std::endl;
             }
 
             SDL_SetRenderDrawColor(renderer, 0,0,0,255);
@@ -482,6 +489,242 @@ void rotate(tile* _tile){
                   }
                   break;
             case 4:
+                  if(layout[_tile->prop[1]-1] == 0 && _tile->prop[1]%WIDTH > 0){
+                        _tile->prop[3] = _tile->prop[1]+WIDTH;
+                        _tile->prop[2] = _tile->prop[1]+1;
+                        _tile->prop[0] = _tile->prop[1]-1;
+                  }
+                  break;
+            
+            default:
+                  break;
+            }
+            break;
+      case ISHAPE:
+            if(_tile->prop[3]-_tile->prop[2] == 1){
+                  position = 1;
+            }else{
+                  position = 2;
+            }
+            if(position == 1){
+                  if(_tile->prop[2]/WIDTH<22 && layout[_tile->prop[2]+WIDTH] == 0&&
+                  layout[_tile->prop[2]+(2*WIDTH)] == 0 && layout[_tile->prop[2]-WIDTH]==0){
+                        _tile->prop[0]=_tile->prop[2]-WIDTH;
+                        _tile->prop[1]=_tile->prop[2];
+                        _tile->prop[2]+=WIDTH;
+                        _tile->prop[3]=_tile->prop[2]+WIDTH;
+                  }
+            }else{
+                  if(_tile->prop[1]%WIDTH>1 && _tile->prop[1]%WIDTH<15 &&
+                  layout[_tile->prop[1]-1] == 0 && layout[_tile->prop[1]-2] == 0 &&
+                  layout[_tile->prop[1]+1] == 0){
+                        _tile->prop[2]=_tile->prop[1];
+                        _tile->prop[1]=_tile->prop[2]-1;
+                        _tile->prop[0]=_tile->prop[1]-1;
+                        _tile->prop[3]=_tile->prop[2]+1;
+                  }
+            }
+            break;
+      
+      default:
+            break;
+      }
+}
+
+void rRotate(tile* _tile){
+      int position;
+      switch (_tile->shape)
+      {
+      case SSHAPE:
+            if(_tile->prop[0]<_tile->prop[1]){
+                  position = 1;
+            }
+            if(_tile->prop[1]<_tile->prop[0]){
+                  position = 2;
+            }
+            if(position == 1){
+                  if(layout[_tile->prop[3]+1] == 0 && layout[_tile->prop[3]+WIDTH+1] == 0 && _tile->prop[3]/WIDTH < HEIGHT-1){
+                        _tile->prop[2]=_tile->prop[3]+1;
+                        _tile->prop[1]=_tile->prop[0];
+                        _tile->prop[0]=_tile->prop[3];
+                        _tile->prop[3]+=WIDTH+1;
+                  }
+            }
+            if(position == 2){
+                  if(layout[_tile->prop[0]-1] == 0 && layout[_tile->prop[1]+1] == 0 && _tile->prop[0]%WIDTH > 0){
+                        _tile->prop[3]=_tile->prop[0];
+                        _tile->prop[2]=_tile->prop[3]-1;
+                        _tile->prop[0]=_tile->prop[1];
+                        _tile->prop[1]=_tile->prop[0]+1;
+                  }
+            }
+            break;
+      case ZSHAPE:
+            if(_tile->prop[0]<_tile->prop[1]){
+                  position = 1;
+            }
+            if(_tile->prop[1]<_tile->prop[0]){
+                  position = 2;
+            }
+            if(position==1){
+                  if(layout[_tile->prop[2]+WIDTH-1] == 0 && _tile->prop[3]/WIDTH < HEIGHT-1){
+                        _tile->prop[0] += WIDTH;
+                        _tile->prop[3] = _tile->prop[0]+WIDTH;
+                  }
+            }
+            if(position==2){
+                  if(layout[_tile->prop[2]+1] == 0 && _tile->prop[2]%WIDTH < WIDTH-1){
+                        _tile->prop[0] -= WIDTH;
+                        _tile->prop[3] = _tile->prop[2]+1;
+                  }
+            }
+            break;
+      case LSHAPE:
+            if(_tile->prop[0]<_tile->prop[1]){
+                  if(_tile->prop[2] < _tile->prop[3]){
+                        position = 1;
+                  }else{
+                        position = 4;
+                  }
+            }
+            if(_tile->prop[1]<_tile->prop[0]){
+                  if(_tile->prop[2] < _tile->prop[3]){
+                        position = 2;
+                  }else{
+                        position = 3;
+                  }
+            }
+            
+            switch (position)
+            {
+            case 3:
+                  if(layout[_tile->prop[1]-1] == 0 && layout[_tile->prop[1]+WIDTH-1] == 0 && 
+                  layout[_tile->prop[1]+1] == 0 && _tile->prop[1]%WIDTH > 0){
+                        _tile->prop[0] = _tile->prop[1]+1;
+                        _tile->prop[2] = _tile->prop[1]-1;
+                        _tile->prop[3] = _tile->prop[2]+WIDTH;
+                  }
+                  break;
+            case 4:
+                  if(layout[_tile->prop[1]-WIDTH-1] == 0 && layout[_tile->prop[1]+WIDTH] == 0 &&
+                  layout[_tile->prop[1]-WIDTH] == 0){
+                        _tile->prop[0] = _tile->prop[1]+WIDTH;
+                        _tile->prop[2] = _tile->prop[1]-WIDTH;
+                        _tile->prop[3] = _tile->prop[2]-1;
+                  }
+                  break;
+            case 1:
+                  if(layout[_tile->prop[1]+1] == 0 && layout[_tile->prop[1]-1] == 0 &&
+                  layout[_tile->prop[1]-WIDTH+1] == 0 && _tile->prop[1]%WIDTH < WIDTH-1){
+                        _tile->prop[0] = _tile->prop[1]-1;
+                        _tile->prop[2] = _tile->prop[1]+1;
+                        _tile->prop[3] = _tile->prop[2]-WIDTH;
+                  }
+                  break;
+            case 2:
+                  if(layout[_tile->prop[1]-WIDTH] == 0 && layout[_tile->prop[1]+WIDTH] == 0 &&
+                  layout[_tile->prop[1]+WIDTH+1] == 0 && _tile->prop[1]/WIDTH < HEIGHT-1){
+                        _tile->prop[0] = _tile->prop[1]-WIDTH;
+                        _tile->prop[2] = _tile->prop[1]+WIDTH;
+                        _tile->prop[3] = _tile->prop[2]+1;
+                  }            
+                  break;
+            default:
+                  break;
+            }
+            break;
+      case JSHAPE:
+            if(_tile->prop[0]<_tile->prop[1]){
+                  if(_tile->prop[2] < _tile->prop[3]){
+                        position = 1;
+                  }else{
+                        position = 4;
+                  }
+            }
+            if(_tile->prop[1]<_tile->prop[0]){
+                  if(_tile->prop[2] < _tile->prop[3]){
+                        position = 2;
+                  }else{
+                        position = 3;
+                  }
+            }
+            switch (position)
+            {
+            case 3:
+                  if(layout[_tile->prop[1]-1] == 0 && layout[_tile->prop[1]-WIDTH-1] == 0 && 
+                  layout[_tile->prop[1]+1] == 0 && _tile->prop[1]%WIDTH < WIDTH-1){
+                        _tile->prop[0] = _tile->prop[1]+1;
+                        _tile->prop[3] = _tile->prop[1]-1;
+                        _tile->prop[2] = _tile->prop[3]-WIDTH;
+                  }
+                  break;
+            case 4:
+                  if(layout[_tile->prop[1]-WIDTH+1] == 0 && layout[_tile->prop[1]+WIDTH] == 0 &&
+                  layout[_tile->prop[1]-WIDTH] == 0 && _tile->prop[1]/WIDTH < HEIGHT-1){
+                        _tile->prop[0] = _tile->prop[1]+WIDTH;
+                        _tile->prop[3] = _tile->prop[1]-WIDTH;
+                        _tile->prop[2] = _tile->prop[3]+1;
+                  }
+                  break;
+            case 1:
+                  if(layout[_tile->prop[1]+1] == 0 && layout[_tile->prop[1]-1] == 0 &&
+                  layout[_tile->prop[1]+WIDTH+1] == 0 && _tile->prop[1]%WIDTH > 0){
+                        _tile->prop[0] = _tile->prop[1]-1;
+                        _tile->prop[3] = _tile->prop[1]+1;
+                        _tile->prop[2] = _tile->prop[3]+WIDTH;
+                  }
+                  break;
+            case 2:
+                  if(layout[_tile->prop[1]-WIDTH] == 0 && layout[_tile->prop[1]+WIDTH] == 0 &&
+                  layout[_tile->prop[1]+WIDTH+1] == 0){
+                        _tile->prop[0] = _tile->prop[1]-WIDTH;
+                        _tile->prop[3] = _tile->prop[1]+WIDTH;
+                        _tile->prop[2] = _tile->prop[3]-1;
+                  }            
+                  break;
+            default:
+                  break;
+            }            
+            break;
+      case TSHAPE:
+            if(_tile->prop[0]<_tile->prop[1]){
+                  if(_tile->prop[1] < _tile->prop[3]){
+                        position = 1;
+                  }else{
+                        position = 2;
+                  }
+            }
+            if(_tile->prop[1]<_tile->prop[0]){
+                  if(_tile->prop[3] < _tile->prop[1]){
+                        position = 3;
+                  }else{
+                        position = 4;
+                  }
+            }
+            switch (position)
+            {
+            case 3:
+                  if(layout[_tile->prop[1]-WIDTH] == 0){
+                        _tile->prop[2] = _tile->prop[3];
+                        _tile->prop[3] = _tile->prop[0];
+                        _tile->prop[0] = _tile->prop[1]-WIDTH;
+                  }
+                  break;
+            case 4:
+                  if(layout[_tile->prop[1]+1]==0 && _tile->prop[1]%WIDTH < 15){
+                        _tile->prop[3] = _tile->prop[1]-WIDTH;
+                        _tile->prop[0] = _tile->prop[1]+1;
+                        _tile->prop[2] = _tile->prop[1]-1;
+                  }
+                  break;
+            case 1:
+                  if(layout[_tile->prop[1]+WIDTH] == 0 && _tile->prop[1]/WIDTH < 23){
+                        _tile->prop[0] = _tile->prop[1]+WIDTH;
+                        _tile->prop[2] = _tile->prop[3];
+                        _tile->prop[3] = _tile->prop[1]+1;
+                  }
+                  break;
+            case 2:
                   if(layout[_tile->prop[1]-1] == 0 && _tile->prop[1]%WIDTH > 0){
                         _tile->prop[3] = _tile->prop[1]+WIDTH;
                         _tile->prop[2] = _tile->prop[1]+1;
