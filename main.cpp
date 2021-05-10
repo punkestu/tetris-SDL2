@@ -68,6 +68,7 @@ bool falling(tile* _tile, int stackDel);
 void layoutFall();
 
 int randx(int min, int max);
+bool focus(SDL_Window* window, SDL_Event *e, bool recent);
 
 int main(int argc, char* argv[]){
       
@@ -103,41 +104,34 @@ int main(int argc, char* argv[]){
             SDL_PollEvent(&e);
             if(e.type == SDL_QUIT){break;}
 
-            if(SDL_GetWindowFlags(window) != SDL_WINDOW_MINIMIZED){
-                  if(e.type == SDL_KEYDOWN){
-                        // if(SDL_GetTicks()-btnP>=1000/200){
-                        if(e.key.keysym.sym == SDLK_a){moveTile(&fall, LEFT);}
-                        if(e.key.keysym.sym == SDLK_d){moveTile(&fall, RIGHT);}
-                        if(e.key.keysym.sym == SDLK_s){drop = true;}
-                        if(e.key.keysym.sym == SDLK_l){rotate(&fall);}
-                        if(e.key.keysym.sym == SDLK_j){rRotate(&fall);}
-                        // }
-                  }
-                  if(e.type == SDL_KEYUP){
-                        if(e.key.keysym.sym == SDLK_s){drop = false;}
-                  }
-
-                  erased = eraseLine();
-                  layoutFall();
-                  // SDL_Log("%d %d %d %d",fall.prop[0],fall.prop[1],fall.prop[2],fall.prop[3]);
-
-                  if(SDL_GetTicks()-frmTime >= 1000/(drop?20:10)){
-                        if(drop){stackDel = 4;}
-                        if(!falling(&fall, stackDel)){
-                              if(stackDel < 3){
-                                    stackDel++;
-                              }else{
-                                    rePos(&fall);
-                                    stackDel=0;
-                              }
+            if(e.type == SDL_KEYDOWN){
+                  // if(SDL_GetTicks()-btnP>=1000/200){
+                  if(e.key.keysym.sym == SDLK_a){moveTile(&fall, LEFT);}
+                  if(e.key.keysym.sym == SDLK_d){moveTile(&fall, RIGHT);}
+                  if(e.key.keysym.sym == SDLK_s){drop = true;}
+                  if(e.key.keysym.sym == SDLK_l){rotate(&fall);}
+                  if(e.key.keysym.sym == SDLK_j){rRotate(&fall);}
+                  // }
+            }
+            if(e.type == SDL_KEYUP){
+                  if(e.key.keysym.sym == SDLK_s){drop = false;}
+            }
+            erased = eraseLine();
+            layoutFall();
+            // SDL_Log("%d %d %d %d",fall.prop[0],fall.prop[1],fall.prop[2],fall.prop[3]);
+            if(SDL_GetTicks()-frmTime >= 1000/(drop?20:10)){
+                  if(drop){stackDel = 4;}
+                  if(!falling(&fall, stackDel)){
+                        if(stackDel < 3){
+                              stackDel++;
                         }else{
+                              rePos(&fall);
                               stackDel=0;
                         }
-                        frmTime = SDL_GetTicks();
+                  }else{
+                        stackDel=0;
                   }
-            }else{
-                  frmTime=SDL_GetTicks();
-                  std::cout<<"minimized"<<std::endl;
+                  frmTime = SDL_GetTicks();
             }
 
             SDL_SetRenderDrawColor(renderer, 0,0,0,255);
@@ -840,4 +834,28 @@ int randx(int min, int max){
       }
       ret=(ret%(max-min+1))+min;
       return ret;
+}
+
+bool focus(SDL_Window* window, SDL_Event *e, bool recent){
+      if(SDL_GetMouseFocus() == window){
+            if(!recent){
+                  if(e->type == SDL_MOUSEBUTTONDOWN){
+                        return true;
+                  }else{
+                        return false;
+                  }
+            }else{
+                  return false;
+            }
+      }else{
+            if(!recent){
+                  return false;
+            }else{
+                  if(e->type == SDL_MOUSEBUTTONDOWN){
+                        return false;
+                  }else{
+                        return true;
+                  }
+            }
+      }
 }
