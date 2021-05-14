@@ -57,7 +57,7 @@ void iShape(tile* _tile);
 void tShape(tile* _tile);
 void squareS(tile* _tile);
 void renTile(SDL_Renderer* renderer, tile* _tile);
-void rePos(tile* _tile);
+bool rePos(tile* _tile);
 void moveTile(tile* _tile, bool dir);
 
 void rotate(tile* _tile);
@@ -99,6 +99,7 @@ int main(int argc, char* argv[]){
       // }
 
       while (true){
+
             int erased = 0;
             SDL_Event e;
             SDL_PollEvent(&e);
@@ -116,36 +117,36 @@ int main(int argc, char* argv[]){
             if(e.type == SDL_KEYUP){
                   if(e.key.keysym.sym == SDLK_s){drop = false;}
             }
-            erased = eraseLine();
-            layoutFall();
             // SDL_Log("%d %d %d %d",fall.prop[0],fall.prop[1],fall.prop[2],fall.prop[3]);
             if(SDL_GetTicks()-frmTime >= 1000/(drop?20:10)){
+                  erased = eraseLine();
+                  layoutFall();
                   if(drop){stackDel = 4;}
                   if(!falling(&fall, stackDel)){
                         if(stackDel < 3){
                               stackDel++;
                         }else{
-                              rePos(&fall);
+                              if(!rePos(&fall)){
+                                    break;
+                              }
                               stackDel=0;
                         }
                   }else{
                         stackDel=0;
                   }
+                  SDL_SetRenderDrawColor(renderer, 0,0,0,255);
+                  SDL_RenderClear(renderer);
+                  field(renderer);
+                  renTile(renderer, &fall);
+
+                  SDL_RenderPresent(renderer);
                   frmTime = SDL_GetTicks();
-            }
+            }            
 
-            SDL_SetRenderDrawColor(renderer, 0,0,0,255);
-            SDL_RenderClear(renderer);
-            
-            field(renderer);
-            renTile(renderer, &fall);
-
-            SDL_RenderPresent(renderer);
       }
 
       SDL_DestroyRenderer(renderer);
       SDL_DestroyWindow(window);
-
 
       SDL_Quit();
       
@@ -222,18 +223,25 @@ void renTile(SDL_Renderer* renderer, tile* _tile){
       }
 }
 
-void rePos(tile* _tile){
-      int param = randx(1,28)%7;
-      // param = ISHAPE;
-      switch (param){
-            case SSHAPE: sShape(_tile); break;
-            case ZSHAPE: zShape(_tile); break;
-            case LSHAPE: lShape(_tile); break;
-            case JSHAPE: jShape(_tile); break;
-            case ISHAPE: iShape(_tile); break;
-            case TSHAPE: tShape(_tile); break;
-            case SQUARE: squareS(_tile); break;
-            default: break;
+bool rePos(tile* _tile){
+      if(layout[WIDTH/2-2] == 1 || layout[WIDTH/2-1] == 1 || 
+         layout[WIDTH/2] == 1 || layout[WIDTH/2+1] == 1){
+            std::cout<<"game over"<<std::endl;
+            return false;
+      }else{
+            int param = randx(1,28)%7;
+            // param = ISHAPE;
+            switch (param){
+                  case SSHAPE: sShape(_tile); break;
+                  case ZSHAPE: zShape(_tile); break;
+                  case LSHAPE: lShape(_tile); break;
+                  case JSHAPE: jShape(_tile); break;
+                  case ISHAPE: iShape(_tile); break;
+                  case TSHAPE: tShape(_tile); break;
+                  case SQUARE: squareS(_tile); break;
+                  default: break;
+            }
+            return true;
       }
 }
 
