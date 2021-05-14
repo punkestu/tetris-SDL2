@@ -87,7 +87,7 @@ int main(int argc, char* argv[]){
       // jShape(&fall);
 
       uint frmTime = SDL_GetTicks();
-      uint btnP = SDL_GetTicks();
+      uint tileTime = SDL_GetTicks();
 
       bool drop = false;
       int stackDel = 0;
@@ -118,7 +118,7 @@ int main(int argc, char* argv[]){
                   if(e.key.keysym.sym == SDLK_s){drop = false;}
             }
             // SDL_Log("%d %d %d %d",fall.prop[0],fall.prop[1],fall.prop[2],fall.prop[3]);
-            if(SDL_GetTicks()-frmTime >= 1000/(drop?20:10)){
+            if(SDL_GetTicks()-tileTime >= 1000/(drop?20:4)){
                   erased = eraseLine();
                   layoutFall();
                   if(drop){stackDel = 4;}
@@ -134,15 +134,16 @@ int main(int argc, char* argv[]){
                   }else{
                         stackDel=0;
                   }
+                  tileTime = SDL_GetTicks();
+            }     
+            if(SDL_GetTicks()-frmTime >= 1000/30){       
                   SDL_SetRenderDrawColor(renderer, 0,0,0,255);
                   SDL_RenderClear(renderer);
                   field(renderer);
                   renTile(renderer, &fall);
-
-                  SDL_RenderPresent(renderer);
                   frmTime = SDL_GetTicks();
-            }            
-
+                  SDL_RenderPresent(renderer);
+            }
       }
 
       SDL_DestroyRenderer(renderer);
